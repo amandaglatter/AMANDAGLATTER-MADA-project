@@ -20,25 +20,24 @@ The structure below is a possible setup for a data analysis project (including t
 
 # Summary/Abstract
 _Write a summary of your project._
-
+For this project, I will analyze the data I have collected from my time as a lab technician in the Community Resistance in Athens Project on the antibiotic resistance carriage rates of _E. coli_ from Athens residents and see if there is a relationship between resistance and diet of the participants in the study.
 
 # Introduction 
 
 ## General Background Information
 _Provide enough background on your topic that others can understand the why and how of your analysis_ 
 
-As microbes are evolving to resist the drugs we commonly use to treat infections, antibiotic resistance is becoming a rapidly growing health threat worldwide.Many key AR threats, can colonize the human intestinal tract, and intestinal colonization is a well-established risk factor for AR infection. The Community Resistance in Athens Project seeks to better understand carriage rates of multi-drug resistant _E. coli_ such as extended spectrum beta lactamase-producing Enterobacteriaceae and carbapenem resistant Enterobacteriaceae. In addition, the CRAP project is gathering data on the resistance patterns of _E. coli_ from individuals in Athens. The data I will be using is a combination of microbiological data that I have collected and the epidemiological data from the survey. The microbiological data quantifies the resistance patterns of _E. coli_ from individuals to different antibiotics. The survey queries the study participants on a variety of personal and lifestyle questions, including drinking water sources, diet, economic information, etc.
+As microbes are evolving to resist the drugs we commonly use to treat infections, antibiotic resistance is becoming a rapidly growing health threat worldwide. The Community Resistance in Athens Project seeks to better understand carriage rates of multi-drug resistant _E. coli_ such as extended spectrum beta lactamase-producing Enterobacteriaceae and carbapenem resistant Enterobacteriaceae. In addition, the CRAP project is gathering data on the resistance patterns of _E. coli_ from individuals in Athens. The data I will be using is a combination of microbiological data that I have collected and the epidemiological data from the survey. The microbiological data quantifies the resistance patterns of _E. coli_ from individuals to different antibiotics. The survey queries the study participants on a variety of personal and lifestyle questions, including drinking water sources, diet, economic information, etc.
 
 ## Description of data and data source
 _Describe what the data is, what it contains, where it is from, etc. Eventually this might be part of a methods section._  
 
-As lab technician for the CRAP project, I have collected the data on the E. coli resistance patterns myself. From participants, we collect a stool sample, take a small diluted aliquot, and grow its E. coli on agar that selects for E. coli. I further purify these isolates, then test 48 or less from each sample, provided E. coli grows, onto different agar plates containing either ampicillin, tetracycline, ceftriaxone, ciprofloxacin, or trimethoprim. I record the patterns for each participant and antibiotic. The data on food consumption, animal contact, and the other epidemiological data comes from a survey each of the participants must take as a part of the study. This survey is IRB approved and survey and sample collection are organized by the Clinical and Translational Research Unit at the University of Georgia. 
-
-We have data from more than 350 individuals at this points, and the resistance patterns of approximately 13,000 E. coli isolates. We have already made figures for basic questions concerning this data, like what proportions of the study population that show resistance to each antibiotic type and demographics, so I would like to focus on environmental factors.
+The data from this project comes from a collaborative effort between the CDC, UGA's Genetics, Environmental Health, Microbiology, and Epidemiology departments, the USDA, and the UGA Clinical and Translational Research Unit. From participants, we collect a stool sample, take a small diluted aliquot, and grow its _E. coli_ on on selective agar. I further purify these isolates, then test 48 or less from each sample, provided _E. coli_ grows, onto different agar plates containing either ampicillin, tetracycline, ceftriaxone, ciprofloxacin, or trimethoprim. As lab technician for the CRAP project, I have recorded the data on the _E. coli_ resistance patterns to various antibiotics myself. The data on food consumption, animal contact, and the other epidemiological data comes from a survey each of the participants must take as a part of the study. This survey is IRB approved and survey and sample collection are organized by the Clinical and Translational Research Unit at the University of Georgia. 
+We have data from approximately 300 individuals at this point (with the ultimate goal being 550), and the resistance patterns of approximately 13,000 _E. coli_ isolates. We have already made figures for basic questions concerning this data, like what proportions of the study population that show resistance to each antibiotic type and demographics, so I would like to focus on environmental and behavioral factors.
 
 ## Questions/Hypotheses to be addressed
 _State the research questions you plan to answer with this analysis._   
-For this project, we have already observed the general resistance patterns and carriage rates of _E. coli_, so I would like to see if there is a relationship between the resistance patterns and the diet of the individuals. Some researchers presume that commensal gut bacteria act as reservoirs for genes with antibiotic resistance, which could lead to horizontal gene transfer and possibly the development of dangerous multi-drug resistant bacteria (Mathur, et. al). There is abundant research on antibiotic resistance exposure in healthcare settings, and there is a gap in knowledge on everyday exposures, like food consumption types. There is evidence that bacteria from fermented dairy and meat commonly carry AR gene (Mathur, et.al). In addition, according to the CDC, raw fruits and vegetables may be contaminated by soil and water (CDC 2020). 
+For this project, we have already observed the general resistance patterns and carriage rates of _E. coli_, so I would like to see if there is a relationship between the resistance patterns and the diet of the individuals. Some researchers presume that commensal gut bacteria act as reservoirs for genes with antibiotic resistance, which could lead to horizontal gene transfer and possibly the development of dangerous multi-drug resistant bacteria (Mathur, et. al). There is abundant research on antibiotic resistance exposure in healthcare settings, and there is a gap in knowledge on everyday exposures, like food. There is evidence that bacteria from fermented dairy and meat commonly carry AR gene (Mathur, et.al). In addition, according to the CDC, raw fruits and vegetables may be contaminated by soil and water (CDC 2020). 
 With respect to this information, I have a few questions.   
 
 * Do individuals who eat meat more than half of the days in the last week have higher resistance than do those who do not?
@@ -68,6 +67,7 @@ This is partly explained in the "Description of data and data source" section. I
 ## Data import and cleaning
 _Write code that reads in the file and cleans it so it's ready for analysis. Since this will be fairly long code for most datasets, it might be a good idea to have it in one or several R scripts. If that is the case, explain here briefly what kind of cleaning/processing you do, and provide more details and well documented code somewhere (e.g. as supplement in a paper). All materials, including files that contain code, should be commented well so everyone can follow along._
 
+I am not including my data quite yet because I need to ensure that the IDs are changed so that we do not break our IRB agreement and to protect the identities of the individuals in the study. Once I have devised alternate IDs, I will upload data as 2 CSV files.
 
 ## Exploratory analysis
 
@@ -135,7 +135,6 @@ Note that this cited reference will show up at the end of the document, the refe
 * https://www.nature.com/articles/39767
 
 * https://www.sciencedirect.com/science/article/pii/S0168160505002618
-
 * https://www.cdc.gov/foodsafety/challenges/antibiotic-resistance.html
 
 
