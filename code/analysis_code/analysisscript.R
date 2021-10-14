@@ -63,11 +63,11 @@ fooddata <- fooddata %>% mutate(value, count = 1) %>%
 fooddata$value <- as.numeric(fooddata$value)
   
   
-fooddata %>% ggplot(aes(x=value, y = num_participants
+fooddata_plot <- fooddata %>% ggplot(aes(x=value, y = num_participants
                         , fill = variable)) +
   geom_bar(position="dodge", stat="identity") +
   xlab("Number days a food type was consumed in last week")
-  
+fooddata_plot
 
 #On another note, let's compare a participant's tetracycline resistance
 #with its ampicillin resistance. This will be the proportion of E.coli
@@ -80,9 +80,10 @@ abs_pattern <- mydata %>% subset(select=c(28:33)) %>%
   mutate(tetra_proportion_resistant = tetra_resistant_isolates / total_isolates) %>%
   mutate(trimet_proportion_resistant = trimet_resistant_isolates / total_isolates)
 
-abs_pattern %>% ggplot(
+amp_tet_plot <- abs_pattern %>% ggplot(
   aes(x=amp_proportion_resistant, y = tetra_proportion_resistant)) +
   geom_point()
+
 #Wow, there kind of seem to be patterns here, but also in other ways there
 #is no correlation. I had a thought that we could remove any zero values, but 
 #that is a really bad idea because it is straight up removing data to make 
@@ -97,8 +98,10 @@ amp_rawproduce <- mydata %>% subset(select = c(1,24,28, 29)) %>%
   mutate(amp_prop_res = amp_resistant_isolates / total_isolates)
 amp_rawproduce$eat_raw_fruits_or_vegetables_past_week <- as.character(amp_rawproduce$eat_raw_fruits_or_vegetables_past_week)
 
-amp_rawproduce %>% ggplot(aes(eat_raw_fruits_or_vegetables_past_week, amp_prop_res)) + 
+amp_produce_plot <- amp_rawproduce %>% ggplot(aes(eat_raw_fruits_or_vegetables_past_week, amp_prop_res)) + 
   geom_point()
+#I know that number of days fruit was eaten is categorical and not numeric,
+#but at this time I do not have a better way to approach this.
 
 
 #None of this data is ready to put in the manuscript.
@@ -111,16 +114,23 @@ amp_rawproduce %>% ggplot(aes(eat_raw_fruits_or_vegetables_past_week, amp_prop_r
 ######################################
 
 # fit linear model
-lmfit <- lm(Weight ~ Height, mydata)  
+amptetfit <- lm(amp_proportion_resistant ~ tetra_proportion_resistant, abs_pattern)  
 
 # place results from fit into a data frame with the tidy function
-lmtable <- broom::tidy(lmfit)
+amptettable <- broom::tidy(amptetfit)
 
 #look at fit results
-print(lmtable)
+print(amptettable)
 
-# save fit results table  
-table_file = here("results", "resulttable.rds")
-saveRDS(lmtable, file = table_file)
+# save ampicillin tetracycline fit results table  
+amptettable_file = here("results", "amptettable.rds")
+saveRDS(amptettable, file = amptettable_file)
 
-  
+#save ampicillin tetracycline figure results
+amp_tet_plot_figure = here("results", "amp_tet_plot")
+saveRDS(amp_tet_plot, file = amp_tet_plot_figure)
+
+
+#save ampicillin-raw produce figure  
+amp_produce_plot_figure = here("results", "amp_produce_plot")
+saveRDS(amp_produce_plot, file = amp_produce_plot_figure)

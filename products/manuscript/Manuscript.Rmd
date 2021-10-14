@@ -67,29 +67,233 @@ This is partly explained in the "Description of data and data source" section. I
 ## Data import and cleaning
 _Write code that reads in the file and cleans it so it's ready for analysis. Since this will be fairly long code for most datasets, it might be a good idea to have it in one or several R scripts. If that is the case, explain here briefly what kind of cleaning/processing you do, and provide more details and well documented code somewhere (e.g. as supplement in a paper). All materials, including files that contain code, should be commented well so everyone can follow along._
 
-I am not including my data quite yet because I need to ensure that the IDs are changed so that we do not break our IRB agreement and to protect the identities of the individuals in the study. Once I have devised alternate IDs, I will upload data as 2 CSV files.
+```{r}
+
+#load needed packages. make sure they are installed.
+#library(readxl) #for loading Excel files. My data is a CSV.
+library(dplyr) #for data processing
+library(here) #to set paths
+library(lubridate) #for dates
+library(tidyr) #for cleaning
+
+
+#path to data
+#note the use of the here() package and not absolute paths
+data_location <- here::here("data","raw_data","ARP_raw.csv")
+
+#load data. 
+#note that for functions that come from specific packages (instead of base R)
+# I often specify both package and function like so
+#package::function() that's not required one could just call the function
+#specifying the package makes it clearer where the function "lives",
+#but it adds typing. You can do it either way.
+
+rawdata <- read.csv(data_location)
+
+#take a look at the data
+dplyr::glimpse(rawdata)
+
+
+#Next, I'll clean up the date column. Below, I set each column into the
+#date the stool sample is produced and the time the stool sample was produced.
+#I am also making sure the columns are read as dates and times as opposed
+#to characters.
+#For this, I will use the lubridate package.
+cleandata <- rawdata %>% separate(recorded_date, into = c(
+  "date_produced","time_produced"), sep = " ")
+cleandata$date_produced <- mdy(cleandata$date_produced)
+cleandata$time_produced <- hm(cleandata$time_produced)
+
+
+#Looking at the column "pets," I can see that there is an excess of words for
+#the "no" category, so I want to simplify that as "No".
+#I'd also like to make an additional column of "Yes" pets and "No".
+
+cleandata <- mutate(cleandata, has_pets = ifelse(grepl(
+  "I do not live with any companion animals", pets), "No", "Yes"))
+
+#Later, I will move this column to the right of the "pets" column (currently 11).
+
+#I want to see all unique values in the pets column.
+unique(cleandata$pets)
+#After looking at this, I want to create a column that indicates if a
+#person has a dog or a cat.
+
+cleandata <- mutate(cleandata, cat_andor_dog =ifelse(grepl(
+  "Cats|Dogs", pets), "Yes",
+  "No"))
+
+#Similarly to the animal data, I want to make a column for medical exposure that
+#is only the yes and no of exposure to healthcare settings. Then I want to move
+#this column to column 8.
+
+cleandata <- mutate(cleandata, healthcare_exposure_yn =ifelse(grepl(
+  "No, I do not have regular exposure to healthcare environments", healthcare_exposure), "No",
+  "Yes"))
+
+
+#Now I want to do some rearranging.
+#Now I want to rearrange the columns so pets is in the 12th column and 
+#cat_andor_dog is the 13th.
+#I want to move the y/n exposure to healthcare environment regularly to
+#beside healthcare_exposure
+
+cleandata <- cleandata[,c(1:8, 46, 9:12, 44,45, 13:43)]
+
+#I'm also removing the column half_total_isolates because I see no use for it.
+#Delete time sample produced, age column (because there is already a numeric age column).
+
+cleandata <- cleandata[-c(36, 3, 28)]
+
+
+#Another thing I am considering is removing any columns that have "No" in the 
+#ecoli_cultured column because we cannot study the antibiotic patterns of
+#the samples that do not produce E. coli. I will revisit this idea later because
+#it may be dangerous to delete large chunks of data like that.
+
+
+```
 
 ## Exploratory analysis
 
-_Use a combination of text/tables/figures to explore and describe your data. You should produce plots or tables or other summary quantities for the most interesting/important quantities in your data. Depending on the total number of variables in your dataset, explore all or some of the others. FIgures produced here might be histograms or density plots, correlation plots, etc. Tables might summarize your data._
 
-_Continue by creating plots or tables of the outcome(s) of interest and the predictor/exposure/input variables you are most interested in. If your dataset is small, you can do that for all variables. Plots produced here can be scatterplots, boxplots, violinplots, etc. Tables can be simple 2x2 tables or larger ones._
+```{r}
 
-_To get some further insight into your data, if reasonable you could compute simple statistics (e.g. t-tests, simple regression model with 1 predictor, etc.) to look for associations between your outcome(s) and each individual predictor variable. Though note that unless you pre-specified the outcome and main exposure, any "p<0.05 means statistical significance" interpretation is not valid._
+#load needed packages. make sure they are installed.
+library(ggplot2) #for plotting
+library(broom) #for cleaning up output from lm()
+library(here) #for data loading/saving
 
-Table \@ref(tab:summarytable) shows a table summarizing the data.
 
 
-```{r summarytable,  echo=FALSE}
-resulttable=readRDS("../../results/summarytable.rds")
-knitr::kable(resulttable, caption = 'Data summary table.')
+library(dplyr) #for data wrangling
+library(reshape) #for reshaping and melting data
+
+#path to data
+#note the use of the here() package and not absolute paths
+data_location <- here::here("data","processed_data","processeddata.rds")
+
+#load data. 
+mydata <- readRDS(data_location)
+
+######################################
+#Data exploration/description
+######################################
+#I'm using basic R commands here.
+#Lots of good packages exist to do more.
+#For instance check out the tableone or skimr packages
+
+#summarize data 
+mysummary = summary(mydata)
+
+#look at summary
+print(mysummary)
+
+
+#Let's look at demographics for the study.
+mydata %>% ggplot(aes(x = race)) +
+  geom_bar()
+#^The race data shows that a majority of the participants are white.
+mydata %>% ggplot(aes(x = biological_sex)) +
+  geom_bar()
+#^This biological sex data shows that, when observing males and females,
+#the participant group is primarily female.
+mydata %>% ggplot(aes(x = numeric_age)) +
+  geom_bar()
+#^This age data shows that the age of the participants skews
+#strongly left/young.
 ```
 
+I want to take a look at one of the main outcomes/relationships- that between food and one of the antibiotics.
+```{r}
 
-Figure \@ref(fig:resultfigure) shows a scatterplot figure produced by one of the R scripts.
+#Let's look at the food data. I want to make a separate data set of
+#food information so I can make a melted data set.
+#The figure at the end shows the number of participants that ate
+#a typ
 
-```{r resultfigure,  fig.cap='Analysis figure.', echo=FALSE}
-knitr::include_graphics("../../results/resultfigure.png")
+fooddata <- mydata[,c(1,20:24)] %>% 
+  melt(id=c("fake_id")) %>%
+  subset(select=c("variable", "value"))
+fooddata$value <- as.character(fooddata$value)
+fooddata <- fooddata %>% mutate(value, count = 1) %>%
+  group_by(variable, value) %>%
+  summarise(num_participants = sum(count))
+fooddata$value <- as.numeric(fooddata$value)
+  
+  
+fooddata_plot <- fooddata %>% ggplot(aes(x=value, y = num_participants
+                        , fill = variable)) +
+  geom_bar(position="dodge", stat="identity") +
+  xlab("Number days a food type was consumed in last week")
+fooddata_plot
+
+#On another note, let's compare a participant's tetracycline resistance
+#with its ampicillin resistance. This will be the proportion of E.coli
+#isolates.
+
+abs_pattern <- mydata %>% subset(select=c(28:33)) %>%
+  mutate(amp_proportion_resistant = amp_resistant_isolates / total_isolates) %>%
+  mutate(ceft_proportion_resistant = ceft_resistant_isolates / total_isolates) %>%
+  mutate(cipro_proportion_resistant = cipro_resistant_isolates / total_isolates) %>%
+  mutate(tetra_proportion_resistant = tetra_resistant_isolates / total_isolates) %>%
+  mutate(trimet_proportion_resistant = trimet_resistant_isolates / total_isolates)
+
+amp_tet_plot <- abs_pattern %>% ggplot(
+  aes(x=amp_proportion_resistant, y = tetra_proportion_resistant)) +
+  geom_point()
+
+#Wow, there kind of seem to be patterns here, but also in other ways there
+#is no correlation. I had a thought that we could remove any zero values, but 
+#that is a really bad idea because it is straight up removing data to make 
+#a pattern, so I will not do that. You can kind of see a diagonal line, but
+#I do not think we can say anything because of the excessive outliers.
+
+
+#I want to see if ampicillin resistance and number of days an individual ate
+#fruit that week are correlated
+
+amp_rawproduce <- mydata %>% subset(select = c(1,24,28, 29)) %>%
+  mutate(amp_prop_res = amp_resistant_isolates / total_isolates)
+amp_rawproduce$eat_raw_fruits_or_vegetables_past_week <- as.character(amp_rawproduce$eat_raw_fruits_or_vegetables_past_week)
+
+amp_produce_plot <- amp_rawproduce %>% ggplot(aes(eat_raw_fruits_or_vegetables_past_week, amp_prop_res)) + 
+  geom_point()
+#I know that number of days fruit was eaten is categorical and not numeric,
+#but at this time I do not have a better way to approach this.
+
+
+#None of this data is ready to put in the manuscript.
+#save data frame table to file for later use in manuscript
+#summarytable_file = here("results", "summarytable.rds")
+#saveRDS(summary_df, file = summarytable_file)
+
+######################################
+#Data fitting/statistical analysis
+######################################
+
+# fit linear model
+amptetfit <- lm(amp_proportion_resistant ~ tetra_proportion_resistant, abs_pattern)  
+
+# place results from fit into a data frame with the tidy function
+amptettable <- broom::tidy(amptetfit)
+
+#look at fit results
+print(amptettable)
+
+# save ampicillin tetracycline fit results table  
+amptettable_file = here("results", "amptettable.rds")
+saveRDS(amptettable, file = amptettable_file)
+
+#save ampicillin tetracycline figure results
+amp_tet_plot_figure = here("results", "amp_tet_plot")
+saveRDS(amp_tet_plot, file = amp_tet_plot_figure)
+
+
+#save ampicillin-raw produce figure  
+amp_produce_plot_figure = here("results", "amp_produce_plot")
+saveRDS(amp_produce_plot, file = amp_produce_plot_figure)
+
 ```
 
 
