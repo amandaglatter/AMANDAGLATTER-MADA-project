@@ -81,6 +81,8 @@ cleandata <- cleandata[,c(1:8, 46, 9:12, 44,45, 13:43)]
 cleandata <- cleandata[-c(36, 3, 28)]
 
 
+
+cleandata
 #Another thing I am considering is removing any columns that have "No" in the 
 #ecoli_cultured column because we cannot study the antibiotic patterns of
 #the samples that do not produce E. coli. I will revisit this idea later because
@@ -114,12 +116,6 @@ cleandata <- cleandata[-c(36, 3, 28)]
 processeddata <- cleandata
 
 # save data as RDS
-# I suggest you save your processed and cleaned data as RDS or RDA/Rdata files. 
-# This preserves coding like factors, characters, numeric, etc. 
-# If you save as CSV, that information would get lost.
-# See here for some suggestions on how to store your processed data:
-# http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata
-
 # location to save file
 save_data_location <- here::here("data","processed_data","processeddata.rds")
 
