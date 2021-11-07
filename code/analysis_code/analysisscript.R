@@ -4,6 +4,11 @@
 #this script loads the processed, cleaned data, does a simple analysis
 #and saves the results to the results folder
 
+#Sometimes I get errors loading the data, in which case I do the following:
+#Restart your R session
+#Make sure the working directory is set to the source file location
+# click "session", "set working directory", "source file location."
+
 #load needed packages. make sure they are installed.
 library(ggplot2) #for plotting
 library(broom) #for cleaning up output from lm()
@@ -51,35 +56,29 @@ mydata %>% ggplot(aes(x = numeric_age)) +
 #to a given antibiotic
 
 
-mydata[c("amp_resistant_isolates")] %>% filter(amp_resistant_isolates >= 1) %>% 
+amp_hist <- mydata[c("amp_resistant_isolates")] %>% filter(amp_resistant_isolates >= 1) %>% 
   ggplot(aes(x=amp_resistant_isolates)) + geom_histogram() #ampicillin
 
-mydata[c("ceft_resistant_isolates")] %>% filter(ceft_resistant_isolates >= 1) %>% 
+ceft_hist <- mydata[c("ceft_resistant_isolates")] %>% filter(ceft_resistant_isolates >= 1) %>% 
   ggplot(aes(x=ceft_resistant_isolates)) + geom_histogram() #ceftriaxone
 
-mydata[c("cipro_resistant_isolates")] %>% filter(cipro_resistant_isolates >= 1) %>% 
+cipro_hist <- mydata[c("cipro_resistant_isolates")] %>% filter(cipro_resistant_isolates >= 1) %>% 
   ggplot(aes(x=cipro_resistant_isolates)) + geom_histogram() #ciprofloxacin
 
-mydata[c("tetra_resistant_isolates")] %>% filter(tetra_resistant_isolates >= 1) %>% 
+tetra_hist <- mydata[c("tetra_resistant_isolates")] %>% filter(tetra_resistant_isolates >= 1) %>% 
   ggplot(aes(x=tetra_resistant_isolates)) + geom_histogram() #tetracycline
 
-mydata[c("trimet_resistant_isolates")] %>% filter(trimet_resistant_isolates >= 1) %>% 
+trimet_hist <- mydata[c("trimet_resistant_isolates")] %>% filter(trimet_resistant_isolates >= 1) %>% 
   ggplot(aes(x=trimet_resistant_isolates)) + geom_histogram() #trimethoprim
+
+amp_hist
+ceft_hist
+cipro_hist
+tetra_hist
+trimet_hist
 
 #There is not a strong pattern amongst any of these.On an intitial glance,
 #ciprofloxacin and ceftriaxone are skewed left and the rest are skewed right.
-
-#Examine seasonality of resistance to different antibiotics,
-#starting with ampicillin
-mydata %>% ggplot(aes(y=amp_resistant_isolates, x = date_produced)) +  geom_point()
-#ceftriaxone
-mydata %>% ggplot(aes(y=ceft_resistant_isolates, x = date_produced)) +  geom_point()
-#ciprofloxacin
-mydata %>% ggplot(aes(y=cipro_resistant_isolates, x = date_produced)) +  geom_point()
-#tetracycline
-mydata %>% ggplot(aes(y=tetra_resistant_isolates, x = date_produced)) +  geom_point()
-#trimethoprim
-mydata %>% ggplot(aes(y=trimet_resistant_isolates, x = date_produced)) +  geom_point()
 
 #Let's look at the food data. I want to make a separate data set of
 #food information so I can make a melted data set.
@@ -99,19 +98,14 @@ fooddata$value <- as.numeric(fooddata$value)
 fooddata_plot <- fooddata %>% ggplot(aes(x=value, y = num_participants
                         , fill = variable)) +
   geom_bar(position="dodge", stat="identity") +
-  xlab("Number days a food type was consumed in last week")
+  xlab("Number days a food type was consumed in last week") +
+  theme(legend.key.size = unit(0.25, 'cm'))
 fooddata_plot
+
 
 #On another note, let's compare a participant's tetracycline resistance
 #with its ampicillin resistance. This will be the proportion of E.coli
 #isolates.
-
-#abs_pattern <- mydata %>% subset(select=c(28:33)) %>%
-  #mutate(amp_proportion_resistant = amp_resistant_isolates / total_isolates) %>%
-  #mutate(ceft_proportion_resistant = ceft_resistant_isolates / total_isolates) %>%
-  #mutate(cipro_proportion_resistant = cipro_resistant_isolates / total_isolates) %>%
-  #mutate(tetra_proportion_resistant = tetra_resistant_isolates / total_isolates) %>%
-  #mutate(trimet_proportion_resistant = trimet_resistant_isolates / total_isolates)
 
 #adding columns that show proportion of resistant isolates out of the total isolates
 #removing objects that have no e coli (ecoli_culured == no)
@@ -124,7 +118,9 @@ abs_pattern <- mydata %>% filter(total_isolates > 0) %>%
 
 amp_tet_plot <- abs_pattern %>% ggplot(
   aes(x=amp_proportion_resistant, y = tetra_proportion_resistant)) +
-  geom_point()
+  geom_point() + 
+  xlab("Proportion of E. coli resistant to ampicillin") +
+  ylab("Proportion of E. coli resistant to tetracycline")
 
 amp_cef_plot <- abs_pattern %>% ggplot(
   aes(x=amp_proportion_resistant, y = ceft_proportion_resistant)) +
@@ -136,7 +132,9 @@ amp_cip_plot <- abs_pattern %>% ggplot(
 
 amp_tri_plot <- abs_pattern %>% ggplot(
   aes(x=amp_proportion_resistant, y = trimet_proportion_resistant)) +
-  geom_point()
+  geom_point()+ 
+  xlab("Proportion of E. coli resistant to ampicillin") +
+  ylab("Proportion of E. coli resistant to trimethoprim")
 
 cef_cip_plot <- abs_pattern %>% ggplot(
   aes(x=ceft_proportion_resistant, y = cipro_proportion_resistant)) +
@@ -159,7 +157,9 @@ cip_tri_plot <- abs_pattern %>% ggplot(
   geom_point()
 
 tet_tri_plot <- abs_pattern %>% ggplot(aes(x=tetra_proportion_resistant, y=trimet_proportion_resistant)) +
-  geom_point()
+  geom_point() + 
+  xlab("Proportion of E. coli resistant to tetracycline") +
+  ylab("Proportion of E. coli resistant to trimethoprim")
 
 amp_tet_plot #there is a trend?
 amp_cef_plot #flat line seems to be the trend
@@ -188,6 +188,7 @@ tet_tri_plot #maybe a trend?
 #to analyze thoroughly in my opinion, we will focus on ampicillin,
 #tetracycline, and trimethoprim.
 
+
 #I want to see if ampicillin resistance and number of days an individual ate
 #fruit that week are correlated
 
@@ -196,7 +197,7 @@ amp_rawproduce <- mydata %>% subset(select = c(1,24,28, 29)) %>%
   mutate(amp_prop_res = amp_resistant_isolates / total_isolates)
 amp_rawproduce$eat_raw_fruits_or_vegetables_past_week <- as.character(amp_rawproduce$eat_raw_fruits_or_vegetables_past_week)
 
-abs_pattern %>% ggplot(aes(eat_raw_fruits_or_vegetables_past_week, amp_prop_res)) + 
+amp_rawproduce %>% ggplot(aes(eat_raw_fruits_or_vegetables_past_week, amp_prop_res)) + 
   geom_point()
 
 
@@ -205,19 +206,75 @@ amp_produce_plot <- amp_rawproduce %>% ggplot(aes(eat_raw_fruits_or_vegetables_p
 amp_produce_plot
 
 #TET AND PRODUCE
-tet_rawproduce <- mydata %>% subset(select = c(1,24,28, 29)) %>%
-  mutate(tet_prop_res = tet_resistant_isolates / total_isolates)
-amp_rawproduce$eat_raw_fruits_or_vegetables_past_week <- as.character(amp_rawproduce$eat_raw_fruits_or_vegetables_past_week)
+tet_rawproduce <- mydata %>% subset(select = c(1,24,28, 32)) %>%
+  mutate(tet_prop_res = tetra_resistant_isolates / total_isolates)
+tet_rawproduce$eat_raw_fruits_or_vegetables_past_week <- as.character(tet_rawproduce$eat_raw_fruits_or_vegetables_past_week)
 
-amp_produce_plot <- amp_rawproduce %>% ggplot(aes(eat_raw_fruits_or_vegetables_past_week, amp_prop_res)) + 
+tet_produce_plot <- tet_rawproduce %>% ggplot(aes(eat_raw_fruits_or_vegetables_past_week, tet_prop_res)) + 
   geom_point()
-amp_produce_plot
+tet_produce_plot
+
+#Let's look at dairy's relationship with ampicillin and tetracycline
+#After looking at the results, I wonder if there is a better way to visualize
+#AMP AND dairy
+amp_dairy <- mydata %>% subset(select = c(1,23,28, 29)) %>%
+  mutate(amp_prop_res = amp_resistant_isolates / total_isolates)
+amp_dairy$eat_dairy_past_week <- as.character(amp_dairy$eat_dairy_past_week)
+
+amp_dairy %>% ggplot(aes(eat_dairy_past_week, amp_prop_res)) + 
+  geom_point()
+
+
+#TET AND dairy
+tet_dairy <- mydata %>% subset(select = c(1,23,28, 32)) %>%
+  mutate(tet_prop_res = tetra_resistant_isolates / total_isolates)
+tet_dairy$eat_dairy_past_week <- as.character(tet_dairy$eat_dairy_past_week)
+
+tet_dairy %>% ggplot(aes(eat_dairy_past_week, tet_prop_res)) + 
+  geom_point()
+
+
+#Let's look at shellfish's relationship with ampicillin and tetracycline
+#After looking at the results, I wonder if there is a better way to visualize
+#AMP AND shellfish and fish
+amp_fish <- mydata %>% subset(select = c(1,22,28, 29)) %>%
+  mutate(amp_prop_res = amp_resistant_isolates / total_isolates)
+amp_fish$eat_fish_or_shellfish_past_week <- as.character(amp_fish$eat_fish_or_shellfish_past_week)
+
+amp_fish %>% ggplot(aes(eat_fish_or_shellfish_past_week, amp_prop_res)) + 
+  geom_point()
+
+
+#TET AND fish
+tet_fish <- mydata %>% subset(select = c(1,22,28, 32)) %>%
+  mutate(tet_prop_res = tetra_resistant_isolates / total_isolates)
+tet_fish$eat_fish_or_shellfish_past_week <- as.character(tet_dairy$eat_fish_or_shellfish_past_week)
+
+tet_fish %>% ggplot(aes(eat_fish_or_shellfish_past_week, tet_prop_res)) + 
+  geom_point()
+#Because there seems to be a pretty good split between no fish consumption and
+#any fish comsumption, this might be a good thing to model.
+
 
 
 #I know that number of days fruit was eaten is categorical and not numeric,
 #but at this time I do not have a better way to approach this.
 
 
+#save exploratory images
+#Save figure comparing proportions of ampicillin and
+#tetracycline resistance
+amp_tet_figure = here("results","amp_tet_plot.png")
+ggsave(filename = amp_tet_figure, plot=amp_tet_plot)
+
+amp_tri_figure = here("results", "amp_tri_plot.png")
+ggsave(filename = amp_tri_figure, plot = amp_tri_plot)
+
+tet_tri_figure = here("results", "tet_tri_plot.png")
+ggsave(filename = tet_tri_figure, plot = tet_tri_plot)
+
+fooddata_figure = here("results","fooddata_figure.png")
+ggsave(filename = fooddata_figure, plot=fooddata_plot)
 
 
 
@@ -311,23 +368,122 @@ ampallpredictors_lm
 ampallpredictors_table <- broom::tidy(lm_ampall_model)
 ampallpredictors_table
 
-#Looking at this, only dairy seems to have statistical significance. 
+#Looking at this, dairy seems to have the most statistical significance.
 #Again, these are p-values, so approach with some skepticism. 
 
+#make a df with columns that simply say if the person consumed a certain food
+#type in the last week or not.
+any_eachfood_yn <- abs_pattern[c(1,20:24,28:48)] %>% 
+  mutate(any_fish_yn = eat_fish_or_shellfish_past_week > 0,
+         any_poultry_yn = eat_poultry_past_week > 0,
+         any_beefpork_yn = eat_pork_or_beef_past_week > 0,
+         any_dairy_yn = eat_dairy_past_week > 0,
+         any_rawproduce_yn = eat_raw_fruits_or_vegetables_past_week > 0) 
+
+##next: change any NA value to zero
+any_eachfood_yn$any_fish_yn <- any_eachfood_yn$any_fish_yn %>%  replace(is.na(.), FALSE)
+any_eachfood_yn$any_poultry_yn <- any_eachfood_yn$any_poultry_yn %>%  replace(is.na(.), FALSE)
+any_eachfood_yn$any_beefpork_yn <- any_eachfood_yn$any_beefpork_yn %>%  replace(is.na(.), FALSE)
+any_eachfood_yn$any_dairy_yn <- any_eachfood_yn$any_dairy_yn %>%  replace(is.na(.), FALSE)
+any_eachfood_yn$any_rawproduce_yn <- any_eachfood_yn$any_rawproduce_yn %>%  replace(is.na(.), FALSE)
+
+any_eachfood_yn
+
+
+###############DAIRY
 abs_pattern %>% ggplot(aes(x = eat_dairy_past_week, y = amp_proportion_resistant)) +
   geom_point()
-amp_dairy_yn_plot <- abs_pattern %>% mutate(any_dairy_week_yn = eat_dairy_past_week > 0) %>% 
-  ggplot(aes(x = any_dairy_week_yn, y = amp_proportion_resistant)) +
-  geom_boxplot()
+
+amp_dairy_plot <- any_eachfood_yn %>%
+  ggplot(aes(x = any_dairy_yn, y = amp_proportion_resistant)) +
+  geom_boxplot() + 
+  xlab("Consumed Dairy in last Week") +
+  ylab("Proportion Resistant Ampicillin Isolates")+
+  ggtitle("Proportion of Ampicillin resistance vs. dairy consumption")+
+  labs(subtitle = "For all participants with culturable E. coli")
+amp_dairy_plot
+
+summary(any_eachfood_yn) #there are only 14 participants who consumed no dairy.
+
 
 #plotting but only for isolates that show SOME ampicillin resistance.
 #I'm just doing this for exploration's sake.
-abs_pattern %>% mutate(any_dairy_week_yn = eat_dairy_past_week > 0) %>% 
+
+any_amp_dairy_plot <- any_eachfood_yn %>%
   filter(amp_proportion_resistant > 0) %>%
-  ggplot(aes(x = any_dairy_week_yn, y = amp_proportion_resistant)) +
-  geom_boxplot() #the mean is a lot higher
+  ggplot(aes(x = any_dairy_yn, y = amp_proportion_resistant)) +
+  geom_boxplot() + 
+  xlab("Consumed Dairy in last Week") +
+  ylab("Proportion Resistant Ampicillin Isolates") +
+  ggtitle("Proportion of Ampicillin resistance vs. dairy consumption")+
+  labs(subtitle = "For participants who showed SOME ampicillin resistance")#the mean is a lot higher
+any_amp_dairy_plot
+#notes: for participants who did not consume dairy, 
+#there are only 14 than 25 participants. This number decreases even further when 
+#you consider the number of participants who showed any E. coli resistance.
 
 
+
+####################SHELLFISH
+#I want to look at shellfish because there is a better distribution of 
+#participants who consumed no vs. some (shell)fish in the last week. 
+#For example, if you look at dairy, there are only 14 individuals who consumed no dairy.
+#For shellfish, there are greater than 100.
+abs_pattern %>% ggplot(aes(x = eat_fish_or_shellfish_past_week, y = amp_proportion_resistant)) +
+  geom_point()
+
+#AMP and FISH
+amp_fish_yn_plot <- any_eachfood_yn %>%  ggplot(aes(x = any_fish_yn, y = amp_proportion_resistant)) +
+  geom_boxplot()+
+  ggtitle("Proportion of Ampicillin resistance vs. Fish consumption")+
+  labs(subtitle = "For participants all participants with culturable E. coli")
+amp_fish_yn_plot
+
+#plotting but only for isolates that show SOME ampicillin resistance.
+#I'm just doing this for exploration's sake.
+some_amp_fish_yn_plot <- any_eachfood_yn %>%  filter(amp_proportion_resistant > 0) %>% 
+  ggplot(aes(x = any_fish_yn, y = amp_proportion_resistant)) +
+  geom_boxplot() +
+  ggtitle("Proportion of Ampicillin resistance vs. Fish consumption")+
+  labs(subtitle = "For participants who showed SOME ampicillin resistance")
+  #the false mean is a higher, but is this significant?
+some_amp_fish_yn_plot 
+#the false mean is a higher, but is this significant? 
+#am I messing with the data too much?
+
+
+
+#fit looking at all resistance patterns (not just any resistance) comparing
+#fish and ampicillin resistance
+ampfish_lm_fit <- 
+  lm_mod %>% 
+  fit(amp_proportion_resistant ~ any_fish_yn, data = any_eachfood_yn)
+ampfish_lm <- tidy(ampfish_lm_fit)
+ampfish_lm
+# P value does not show a significant relationship
+
+#########BEEF AND PORK
+
+amp_beefpork_yn_plot <- any_eachfood_yn %>%  ggplot(aes(x = any_beefpork_yn, y = amp_proportion_resistant)) +
+  geom_boxplot()+
+  ggtitle("Proportion of Ampicillin resistance vs. Beef and/or Pork consumption")+
+  labs(subtitle = "For participants all participants with culturable E. coli")
+amp_beefpork_yn_plot
+
+#plotting but only for isolates that show SOME ampicillin resistance.
+#I'm just doing this for exploration's sake.
+some_amp_beefpork_yn_plot <- any_eachfood_yn %>%  filter(amp_proportion_resistant > 0) %>% 
+  ggplot(aes(x = any_beefpork_yn, y = amp_proportion_resistant)) +
+  geom_boxplot() +
+  ggtitle("Proportion of Ampicillin resistance vs. Beef and/or Pork consumption")+
+  labs(subtitle = "For participants who showed SOME ampicillin resistance")
+#the false mean is a higher, but is this significant?
+some_amp_beefpork_yn_plot 
+#the false mean is a higher, but is this significant? 
+#am I messing with the data too much?
+
+##############################################################################
+#############################################################################
 #Tetracycline
 tetprop_and_predictors <- abs_pattern %>%
   subset(select = c(tetra_proportion_resistant,
@@ -377,7 +533,7 @@ triprop_and_predictors
 lm_triall_model <- lm_mod %>% fit(trimet_proportion_resistant ~ ., data = triprop_and_predictors)
 triallpredictors_lm <- tidy(lm_triall_model)
 triallpredictors_lm
-#no significance for trimethoprim
+#no significance for trimethoprim. Dairy consumption is the most significant factor.
 
 triallpredictors_table <- broom::tidy(lm_triall_model)
 triallpredictors_table 
@@ -395,9 +551,17 @@ abs_pattern_yndairy <- abs_pattern_yndairy$any_dairy_week_yn %>% as.factor()
 #linear regression between ampicillin and dairy (as y/n)
 ampdairy_lm_fit <- 
   lm_mod %>% 
-  fit(amp_proportion_resistant ~ any_dairy_week_yn, data = abs_pattern_yndairy)
+  fit(amp_proportion_resistant ~ any_dairy_yn, data = any_eachfood_yn)
 ampdairy_lm <- tidy(ampdairy_lm_fit)
 ampdairy_lm
+
+#linear regression between SOME ampicillin resistance and dairy (as y/n)
+any_ampdairy <- any_eachfood_yn %>%
+  filter(amp_proportion_resistant > 0)
+
+any_ampdairy_lm_fit <- lm_mod %>% fit(amp_proportion_resistant ~ any_dairy_yn, data = any_ampdairy)
+any_ampdairy_lm <- tidy(any_ampdairy_lm_fit)
+any_ampdairy_lm
 
 ampallpredictors_table
 tetallpredictors_table
@@ -411,3 +575,6 @@ saveRDS(tetallpredictors_table, file = tetallpredictors_figure)
 
 triallpredictors_figure = here("results", "triallpredictors_table")
 saveRDS(triallpredictors_table, file = triallpredictors_figure)
+
+
+
